@@ -8,4 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface PaymentRepository extends MongoRepository<Payment, UUID>, PaymentCustomRepository {
+
+    boolean existsByIdAndUserId(UUID id, UUID userId);
 }
