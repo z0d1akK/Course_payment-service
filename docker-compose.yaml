@@ -1,0 +1,83 @@
+services:
+
+  payment-service:
+    image: payment-service:1.0
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: payment-service
+
+    restart: unless-stopped
+
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ACTIVE_PROFILE}
+
+      SERVER_PORT: ${SERVER_PORT}
+
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_DATABASE: ${MONGO_DATABASE}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+
+      RANDOM_API_URL: ${RANDOM_API_URL}
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+    networks:
+      - payment-service-network
+      - kafka-network
+
+
+  mongodb:
+    image: mongodb/mongodb-community-server:8.3.4-ubi9
+
+    container_name: payment-service-mongo
+
+    restart: unless-stopped
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+
+    ports:
+      - "${MONGO_HOST_PORT}:${MONGO_PORT}"
+
+    command: mongod --port ${MONGO_PORT}
+
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --port ${MONGO_PORT} --quiet
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+    volumes:
+      - mongo-data:/data/db
+
+    networks:
+      - payment-service-network
+
+
+volumes:
+  mongo-data:
+
+
+networks:
+  payment-service-network:
+    driver: bridge
+    name: payment-service-network
+  kafka-network:
+    external: true
+    name: kafka-network
