@@ -110,7 +110,7 @@ jobs:
             ${{ runner.os }}-sonar
 
       - name: Compile project for SonarCloud
-        run: mvn compile -DskipTests
+        run: mvn compile verify
 
       - name: Download unit test reports
         uses: actions/download-artifact@v4
