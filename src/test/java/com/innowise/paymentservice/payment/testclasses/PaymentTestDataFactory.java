@@ -1,6 +1,5 @@
 package com.innowise.paymentservice.payment.testclasses;
 
-import com.innowise.paymentservice.payment.dto.request.CreatePaymentRequestDto;
 import com.innowise.paymentservice.payment.dto.request.PaymentFilterRequestDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentResponseDto;
 import com.innowise.paymentservice.payment.entity.Payment;
@@ -23,12 +22,7 @@ public final class PaymentTestDataFactory {
 
     public static final Instant TIMESTAMP = Instant.parse("2026-06-27T12:00:00Z");
 
-    public static CreatePaymentRequestDto createPaymentRequest() {
-        return CreatePaymentRequestDto.builder()
-                .orderId(ORDER_ID)
-                .paymentAmount(BigDecimal.valueOf(150))
-                .build();
-    }
+    public static final BigDecimal AMOUNT = BigDecimal.valueOf(150.00);
 
     public static PaymentFilterRequestDto paymentFilter() {
         return PaymentFilterRequestDto.builder()

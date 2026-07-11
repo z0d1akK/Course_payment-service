@@ -30,10 +30,14 @@ services:
 
       RANDOM_API_URL: ${RANDOM_API_URL}
 
+      GATEWAY_API_KEY: ${GATEWAY_API_KEY}
+
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
 
     depends_on:
       mongodb:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
 
     networks:
@@ -72,8 +76,48 @@ services:
       - payment-service-network
 
 
+  kafka:
+    image: apache/kafka:4.3.1
+
+    container_name: payment-service-kafka
+
+    restart: unless-stopped
+
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://${KAFKA_HOST}:${KAFKA_PORT},EXTERNAL://localhost:${KAFKA_HOST_PORT}
+      KAFKA_LISTENERS: CONTROLLER://${KAFKA_HOST}:${KAFKA_CONTROLLER_PORT},INTERNAL://${KAFKA_HOST}:${KAFKA_PORT},EXTERNAL://0.0.0.0:${KAFKA_HOST_PORT}
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@${KAFKA_HOST}:${KAFKA_CONTROLLER_PORT}
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+    ports:
+      - "${KAFKA_HOST_PORT}:${KAFKA_HOST_PORT}"
+
+    healthcheck:
+      test: [ "CMD-SHELL", "ps aux | grep -v grep | grep kafka || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+    networks:
+      - kafka-network
+
+
 volumes:
   mongo-data:
+  kafka-data:
 
 
 networks:
@@ -81,5 +125,5 @@ networks:
     driver: bridge
     name: payment-service-network
   kafka-network:
-    external: true
+    driver: bridge
     name: kafka-network

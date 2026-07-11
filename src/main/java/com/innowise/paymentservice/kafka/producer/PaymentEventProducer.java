@@ -22,7 +22,7 @@ public class PaymentEventProducer {
         try {
             CompletableFuture<SendResult<String, PaymentCompletedEvent>>
                     future = kafkaTemplate.send(
-                    KafkaTopics.PAYMENT_EVENTS,
+                    KafkaTopics.PAYMENT_COMPLETED,
                     event.getOrderId().toString(),
                     event
             );

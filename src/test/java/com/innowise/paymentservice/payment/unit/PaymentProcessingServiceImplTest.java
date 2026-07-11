@@ -76,6 +76,18 @@ class PaymentProcessingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Should do nothing when payment not found on retry")
+    void processPayment_WhenPaymentNotFound_ShouldDoNothing() {
+        when(paymentRepository.findById(PAYMENT_ID)).thenReturn(Optional.empty());
+
+        service.processPayment(PAYMENT_ID);
+
+        verify(paymentRepository, times(2)).findById(PAYMENT_ID);
+        verify(paymentRepository, never()).save(any());
+        verify(paymentEventProducer, never()).publishPaymentCompletedEvent(any());
+    }
+
+    @Test
     @DisplayName("Should mark payment FAILED when Random API throws exception")
     void processPayment_WhenRandomApiFails() {
         Payment payment = createPayment();

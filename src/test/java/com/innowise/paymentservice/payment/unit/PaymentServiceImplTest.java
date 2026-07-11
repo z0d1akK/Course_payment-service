@@ -1,10 +1,10 @@
 package com.innowise.paymentservice.payment.unit;
 
-import com.innowise.paymentservice.payment.dto.request.CreatePaymentRequestDto;
 import com.innowise.paymentservice.payment.dto.request.PaymentFilterRequestDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentResponseDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentSummaryResponseDto;
 import com.innowise.paymentservice.payment.entity.Payment;
+import com.innowise.paymentservice.payment.entity.PaymentStatus;
 import com.innowise.paymentservice.payment.exception.PaymentNotFoundException;
 import com.innowise.paymentservice.payment.mapper.PaymentMapper;
 import com.innowise.paymentservice.payment.repository.PaymentRepository;
@@ -14,6 +14,7 @@ import com.innowise.paymentservice.security.util.SecurityUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -31,7 +32,6 @@ import java.util.UUID;
 import static com.innowise.paymentservice.payment.testclasses.PaymentTestDataFactory.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,26 +50,24 @@ class PaymentServiceImplTest {
     private PaymentServiceImpl paymentService;
 
     @Test
-    @DisplayName("Should create payment successfully")
-    void createPayment_ShouldCreatePayment() {
-        CreatePaymentRequestDto request = createPaymentRequest();
+    @DisplayName("Should create payment with PENDING status and trigger async processing")
+    void createPayment_ShouldCreatePaymentAndTriggerProcessing() {
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.<Payment>getArgument(0));
 
-        Payment payment = createPayment();
+        paymentService.createPayment(ORDER_ID, USER_ID, AMOUNT);
 
-        PaymentResponseDto response = paymentResponse();
+        ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository).save(paymentCaptor.capture());
 
-        when(paymentMapper.toEntity(request)).thenReturn(payment);
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
-        when(paymentMapper.toResponseDto(payment)).thenReturn(response);
+        Payment capturedPayment = paymentCaptor.getValue();
+        assertThat(capturedPayment.getOrderId()).isEqualTo(ORDER_ID);
+        assertThat(capturedPayment.getUserId()).isEqualTo(USER_ID);
+        assertThat(capturedPayment.getPaymentAmount()).isEqualByComparingTo(AMOUNT);
+        assertThat(capturedPayment.getStatus()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(capturedPayment.getId()).isNotNull();
+        assertThat(capturedPayment.getTimestamp()).isNotNull();
 
-        PaymentResponseDto result = paymentService.createPayment(USER_ID, request);
-
-        assertThat(result).isEqualTo(response);
-
-        verify(paymentMapper).toEntity(request);
-        verify(paymentRepository).save(any(Payment.class));
-        verify(paymentProcessingService).processPayment(payment.getId());
-        verify(paymentMapper).toResponseDto(payment);
+        verify(paymentProcessingService).processPayment(capturedPayment.getId());
     }
 
     @Test

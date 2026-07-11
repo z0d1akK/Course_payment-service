@@ -1,28 +1,25 @@
 package com.innowise.paymentservice.payment.service;
 
-import com.innowise.paymentservice.payment.dto.request.CreatePaymentRequestDto;
 import com.innowise.paymentservice.payment.dto.request.PaymentFilterRequestDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentResponseDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentSummaryResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 public interface PaymentService {
 
     /**
-     * Creates a new payment for the specified user.
-     * <p>
-     * Payment is initially created with PENDING status and then
-     * processed asynchronously by the payment gateway integration.
+     * Creates a new payment after receiving CREATE_ORDER event.
      *
-     * @param userId identifier of the payment owner
-     * @param requestDto request object containing payment information
-     * @return created payment response
+     * @param orderId order identifier
+     * @param userId payment owner
+     * @param amount payment amount
      */
-    PaymentResponseDto createPayment(UUID userId, CreatePaymentRequestDto requestDto);
+    void createPayment(UUID orderId, UUID userId, BigDecimal amount);
 
     /**
      * Returns payment details by identifier.

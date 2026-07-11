@@ -26,6 +26,7 @@ public class KafkaConsumerFactory {
         JsonDeserializer<T> deserializer = new JsonDeserializer<>(eventClass);
 
         deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeHeaders(false);
 
         return new DefaultKafkaConsumerFactory<>(properties, new StringDeserializer(), deserializer).createConsumer();
     }

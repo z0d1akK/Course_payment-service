@@ -280,7 +280,7 @@
                         <exclude>**/mapper/**</exclude>
                         <exclude>**/kafka/**</exclude>
                         <exclude>**/config/**</exclude>
-                        <exclude>**/client/random/**</exclude>>
+                        <exclude>**/client/random/**</exclude>
                         <exclude>**/common/advice/**</exclude>
                         <exclude>**/common/constants/**</exclude>
                         <exclude>**/security/**</exclude>

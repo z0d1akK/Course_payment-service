@@ -1,5 +1,6 @@
 package com.innowise.paymentservice.security.config;
 
+import com.innowise.paymentservice.security.filter.GatewayApiKeyFilter;
 import com.innowise.paymentservice.security.filter.GatewayAuthenticationFilter;
 import com.innowise.paymentservice.security.handler.CustomAccessDeniedHandler;
 import com.innowise.paymentservice.security.handler.CustomAuthenticationEntryPoint;
@@ -20,6 +21,8 @@ public class SecurityConfig {
 
     private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
 
+    private final GatewayApiKeyFilter gatewayApiKeyFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -36,8 +39,12 @@ public class SecurityConfig {
                         .accessDeniedHandler(new CustomAccessDeniedHandler())
                 )
                 .addFilterBefore(
-                        gatewayAuthenticationFilter,
+                        gatewayApiKeyFilter,
                         UsernamePasswordAuthenticationFilter.class
+                )
+                .addFilterAfter(
+                        gatewayAuthenticationFilter,
+                        GatewayApiKeyFilter.class
                 )
                 .build();
     }

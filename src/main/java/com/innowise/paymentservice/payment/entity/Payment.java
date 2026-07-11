@@ -25,14 +25,18 @@ public class Payment {
     @Id
     private UUID id;
 
+    @Field("order_id")
     private UUID orderId;
 
+    @Field("user_id")
     private UUID userId;
 
+    @Field("status")
     private PaymentStatus status;
 
+    @Field("timestamp")
     private Instant timestamp;
 
-    @Field(targetType = FieldType.DECIMAL128)
+    @Field(value = "payment_amount", targetType = FieldType.DECIMAL128)
     private BigDecimal paymentAmount;
 }

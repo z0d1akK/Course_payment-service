@@ -1,25 +1,20 @@
 package com.innowise.paymentservice.payment.controller;
 
 import com.innowise.paymentservice.common.dto.response.ApiErrorResponse;
-import com.innowise.paymentservice.common.dto.response.ValidationErrorResponse;
-import com.innowise.paymentservice.payment.dto.request.CreatePaymentRequestDto;
 import com.innowise.paymentservice.payment.dto.request.PaymentFilterRequestDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentResponseDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentSummaryResponseDto;
 import com.innowise.paymentservice.payment.service.PaymentService;
-import com.innowise.paymentservice.security.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,24 +28,6 @@ import java.util.UUID;
 public class PaymentController {
 
     private final PaymentService paymentService;
-
-    @Operation(summary = "Create payment", description = "Creates payment and starts asynchronous processing")
-    @SecurityRequirement(name = "bearerAuth")
-    @ApiResponse(responseCode = "202", description = "Payment accepted")
-    @ApiResponse(responseCode = "400", description = "Validation error",
-            content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
-    )
-    @ApiResponse(responseCode = "401", description = "Unauthorized user detected",
-            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
-    )
-    @ApiResponse(responseCode = "403", description = "Access denied",
-            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
-    )
-    @PostMapping
-    public ResponseEntity<PaymentResponseDto> createPayment(@Valid @RequestBody CreatePaymentRequestDto requestDto) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(paymentService.createPayment(SecurityUtils.getCurrentUserId(), requestDto));
-    }
 
     @Operation(summary = "Get payment by id", description = "Returns payment details")
     @SecurityRequirement(name = "bearerAuth")

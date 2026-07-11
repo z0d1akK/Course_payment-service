@@ -1,7 +1,6 @@
 package com.innowise.paymentservice.payment.service.impl;
 
 import com.innowise.paymentservice.common.constants.messages.ErrorMessages;
-import com.innowise.paymentservice.payment.dto.request.CreatePaymentRequestDto;
 import com.innowise.paymentservice.payment.dto.request.PaymentFilterRequestDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentResponseDto;
 import com.innowise.paymentservice.payment.dto.response.PaymentSummaryResponseDto;
@@ -34,19 +33,20 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentProcessingService paymentProcessingService;
 
     @Override
-    public PaymentResponseDto createPayment(UUID userId, CreatePaymentRequestDto requestDto) {
-        Payment payment = paymentMapper.toEntity(requestDto);
+    public void createPayment(UUID orderId, UUID userId, BigDecimal amount) {
 
-        payment.setId(UUID.randomUUID());
-        payment.setUserId(userId);
-        payment.setStatus(PaymentStatus.PENDING);
-        payment.setTimestamp(Instant.now());
+        Payment payment = Payment.builder()
+                .id(UUID.randomUUID())
+                .orderId(orderId)
+                .userId(userId)
+                .paymentAmount(amount)
+                .status(PaymentStatus.PENDING)
+                .timestamp(Instant.now())
+                .build();
 
         Payment savedPayment = paymentRepository.save(payment);
 
         paymentProcessingService.processPayment(savedPayment.getId());
-
-        return paymentMapper.toResponseDto(savedPayment);
     }
 
     @Override
